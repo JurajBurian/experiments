@@ -63,40 +63,34 @@ package object graph {
 				graph.get(end) match {
 					case None => retComponent
 					case Some(vs) => {
-						val rds = (vs -from)
+						val rds = (vs - from)
 						if (rds.isEmpty) {
 							retComponent
 						} else {
 							findConnectedComponent(end, rds.head, graph, rds.tail, retComponent)
 						}
-				}
+					}
 				}
 			}
 		}
-
 		@tailrec
-		def findConnectedComponents(vertex:String, graph:Graph, components:Set[Set[String]]=Set.empty):Set[Set[String]] = {
-
-			def difference(vertexes:Set[String], components:Set[Set[String]]) = {
-				var diff = vertexes;
-				for(c<-components) {
-					diff = diff &~ c
-				}
-				diff
-			}
+		def findConnectedComponents(
+			                           vertex: String, graph: Graph,
+			                           vertexes: Set[String],
+			                           components: Set[Set[String]] = Set.empty): Set[Set[String]] = {
 			val ct = findConnectedComponent(vertex, vertex, graph)
 			val cts = components + ct
-			val diff =  difference(graph.keySet, cts)
-			if(diff.isEmpty) {
+			val diff = (vertexes &~ ct)
+			if (diff.isEmpty) {
 				cts
 			} else {
-				findConnectedComponents(diff.head, graph, cts)
+				findConnectedComponents(diff.head, graph, diff, cts)
 			}
 		}
-		if(graph.isEmpty) {
+		if (graph.isEmpty) {
 			Set.empty
 		} else {
-			findConnectedComponents(graph.head._1, graph)
+			findConnectedComponents(graph.head._1, graph, graph.keySet)
 		}
 	}
 }
