@@ -54,43 +54,42 @@ package object graph {
 
 	def findConnectedComponents(graph: Graph) = {
 		@tailrec
-		def findConnectedComponent(from: String, end: String, graph: Graph, rest: Set[String] = Set.empty, component: Set[String] = Set.empty): Set[String] = {
-			if (component.contains(end)) {
-				component
+		def findConnectedComponent(
+			                          visiting: Set[String],
+			                          rest: Set[String],
+			                          component: Set[String] = Set.empty): (Set[String], Set[String], Set[String]) = {
+			if (visiting.isEmpty) {
+				(visiting, rest, component)
 			} else {
-				val retComponent = component + end
-				val vs = graph.get(end)
-				graph.get(end) match {
-					case None => retComponent
-					case Some(vs) => {
-						val rds = (vs - from)
-						if (rds.isEmpty) {
-							retComponent
-						} else {
-							findConnectedComponent(end, rds.head, graph, rds.tail, retComponent)
-						}
+				val v = visiting.head;
+				val retRest = rest - v
+				val retVisiting = visiting.tail
+				if (component.contains(v)) {
+					findConnectedComponent(retVisiting, retRest, component)
+				} else {
+					val retComponent = component + v
+					graph.get(v) match {
+						case None => findConnectedComponent(retVisiting, retRest, retComponent)
+						case Some(vs) => findConnectedComponent(retVisiting ++ vs, retRest, retComponent)
 					}
 				}
 			}
 		}
 		@tailrec
-		def findConnectedComponents(
-			                           vertex: String, graph: Graph,
-			                           vertexes: Set[String],
-			                           components: Set[Set[String]] = Set.empty): Set[Set[String]] = {
-			val ct = findConnectedComponent(vertex, vertex, graph)
-			val cts = components + ct
-			val diff = (vertexes &~ ct)
-			if (diff.isEmpty) {
-				cts
+		def findConnectedComponents(vxs: Set[String],
+		                            cts: Set[Set[String]] = Set.empty): Set[Set[String]] = {
+			val (visiting, vertexes, component) = findConnectedComponent(Set(vxs.head), vxs.tail)
+			val components = cts + component
+			if (vertexes.isEmpty) {
+				components
 			} else {
-				findConnectedComponents(diff.head, graph, diff, cts)
+				findConnectedComponents(vertexes, components)
 			}
 		}
 		if (graph.isEmpty) {
 			Set.empty
 		} else {
-			findConnectedComponents(graph.head._1, graph, graph.keySet)
+			findConnectedComponents(graph.keySet)
 		}
 	}
 }
