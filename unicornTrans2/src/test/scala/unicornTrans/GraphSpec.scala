@@ -36,6 +36,12 @@ class GraphSpec extends FreeSpec with MustMatchers {
 
 			cc must be(Set(Set("1", "2", "3"), Set("5", "6"), Set("4")))
 		}
+
+		"should find empty components in empty graph" in {
+			val (graph, info) = graphFromEdges(List.empty)()
+			val cc = findConnectedComponents(graph)
+			cc must be(Set[Set[String]]())
+		}
 	}
 }
 
